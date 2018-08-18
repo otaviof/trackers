@@ -4,13 +4,46 @@ import (
 	trans "github.com/odwrtw/transmission"
 )
 
-type ClientInterface interface {
+type clientInterface interface {
+	ListTrackers() ([]*Tracker, error)
+	ListTorrents() ([]*Torrent, error)
 }
 
+// Client tranmission torrent client.
 type Client struct {
 	t *trans.Client
 }
 
+// ListTrackers based on torrents, extracts a unique list.
+func (c *Client) ListTrackers() ([]*Tracker, error) {
+	var torrent *Torrent
+	var torrents []*Torrent
+	var tracker *Tracker
+	var trackers []*Tracker
+	var trackerMap = make(map[string]*Tracker)
+	var exists bool
+	var err error
+
+	if torrents, err = c.ListTorrents(); err != nil {
+		return nil, err
+	}
+
+	for _, torrent = range torrents {
+		for _, tracker = range torrent.Trackers {
+			if _, exists = trackerMap[tracker.Announce]; !exists {
+				trackerMap[tracker.Announce] = tracker
+			}
+		}
+	}
+
+	for _, tracker = range trackerMap {
+		trackers = append(trackers, tracker)
+	}
+
+	return trackers, nil
+}
+
+// extractedTorrent transforms a upstream transmission torrent in a local torrent object.
 func (c *Client) extractTorrent(torrent *trans.Torrent) (*Torrent, error) {
 	var trackerStats trans.TrackerStats
 	var extractedTrackers []*Tracker
@@ -27,7 +60,8 @@ func (c *Client) extractTorrent(torrent *trans.Torrent) (*Torrent, error) {
 	return &Torrent{ID: torrent.ID, Name: torrent.Name, Trackers: extractedTrackers}, nil
 }
 
-func (c *Client) List() ([]*Torrent, error) {
+// ListTorrents returns a list of torrents.
+func (c *Client) ListTorrents() ([]*Torrent, error) {
 	var torrents []*trans.Torrent
 	var torrent *trans.Torrent
 	var extractedTorrents []*Torrent
@@ -50,6 +84,7 @@ func (c *Client) List() ([]*Torrent, error) {
 	return extractedTorrents, nil
 }
 
+// NewClient instantiate a transmission API client.
 func NewClient(address string, user string, pass string) (*Client, error) {
 	var client = &Client{}
 	var err error
