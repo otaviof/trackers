@@ -5,12 +5,13 @@ import "log"
 // Monitor monitor instance
 type Monitor struct {
 	storage storageInterface
+	timeout int
 }
 
 // probedTracker execute the probes and name resolver against informed tracker, it returns a new
 // tracker instance with up-to-date fields regarding its functional status.
 func (m *Monitor) probeTracker(tracker *Tracker) (*Tracker, error) {
-	var probe = NewProbe(tracker)
+	var probe = NewProbe(tracker, m.timeout)
 	var probedTracker *Tracker
 	var addresses []string
 	var err error
@@ -44,7 +45,7 @@ func (m *Monitor) probeTracker(tracker *Tracker) (*Tracker, error) {
 
 // Inspect load trackers from storage and start to probe if services are up, the results are stored
 // back via storage interface.
-func (m *Monitor) Inspect() error {
+func (m *Monitor) Inspect(dryRun bool) error {
 	var trackers []*Tracker
 	var tracker *Tracker
 	var err error
@@ -64,8 +65,10 @@ func (m *Monitor) Inspect() error {
 		log.Printf("Tracker: status='%d', addresses='%v'",
 			probedTracker.Status, probedTracker.Addresses)
 
-		if err = m.storage.Update(probedTracker); err != nil {
-			return err
+		if !dryRun {
+			if err = m.storage.Update(probedTracker); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -73,6 +76,6 @@ func (m *Monitor) Inspect() error {
 }
 
 // NewMonitor instantiate a monitor object, requires storage interface.
-func NewMonitor(storage storageInterface) *Monitor {
-	return &Monitor{storage: storage}
+func NewMonitor(storage storageInterface, timeout int) *Monitor {
+	return &Monitor{storage: storage, timeout: timeout}
 }

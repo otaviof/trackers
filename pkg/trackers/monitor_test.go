@@ -11,14 +11,14 @@ var monitor *Monitor
 func TestNewMonitor(t *testing.T) {
 	var storage *Storage
 
-	storage, _ = NewStorage()
-	monitor = NewMonitor(storage)
+	storage, _ = NewStorage("/var/tmp/test.sqlite")
+	monitor = NewMonitor(storage, 5)
 }
 
 func TestMonitorInspect(t *testing.T) {
 	var err error
 
-	err = monitor.Inspect()
+	err = monitor.Inspect(false)
 
 	assert.Nil(t, err)
 }
