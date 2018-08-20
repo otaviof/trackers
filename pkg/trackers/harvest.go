@@ -2,6 +2,7 @@ package trackers
 
 import "log"
 
+// Harvest query torrent client for trackers, saving the new ones.
 type Harvest struct {
 	storage storageInterface
 	client  clientInterface
