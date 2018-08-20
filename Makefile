@@ -19,3 +19,7 @@ clean-vendor:
 
 test:
 	go test -cover -v pkg/$(APP)/*
+
+install: build
+	cp -v -f $(BUILD_DIR)/$(APP) /usr/local/bin/$(APP)
+	chmod +x /usr/local/bin/$(APP)
