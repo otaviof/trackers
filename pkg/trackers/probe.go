@@ -1,9 +1,11 @@
 package trackers
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -73,23 +75,35 @@ func (p *Probe) ReachableAddresses() ([]string, error) {
 	return reachable, nil
 }
 
+func DnsDialer(ctx context.Context, network, address string) (net.Conn, error) {
+	var dialer = net.Dialer{}
+	return dialer.DialContext(ctx, "udp", "1.1.1.1:53")
+}
+
 // LookupIPs resolve tracker's hostname IPv4 addresses
 func (p *Probe) LookupIPs() error {
-	var IPs []net.IP
-	var IP net.IP
+	var resolver net.Resolver
+	var ctx context.Context
+	var IPs []net.IPAddr
+	var IP net.IPAddr
 	var err error
 
-	if IPs, err = net.LookupIP(p.tracker.Hostname); err != nil {
+	resolver = net.Resolver{PreferGo: true, Dial: DnsDialer}
+	ctx = context.Background()
+
+	if IPs, err = resolver.LookupIPAddr(ctx, p.tracker.Hostname); err != nil {
 		return err
 	}
 
 	for _, IP = range IPs {
-		var ipv4 = IP.To4().String()
+		var ipv4 = IP.String()
+		var matched bool
 
-		// ignoring "<nil>", since it represents tha IPv5 address
-		if ipv4 != "" && ipv4 != "<nil>" {
-			p.addresses = append(p.addresses, ipv4)
+		if matched, _ = regexp.MatchString(`^\d+\.\d+\.\d+\.\d+$`, ipv4); !matched {
+			continue
 		}
+
+		p.addresses = append(p.addresses, ipv4)
 	}
 
 	log.Printf("Tracker '%s' IPv4 addresses: '[%s]'",
