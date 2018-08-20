@@ -14,7 +14,7 @@ func TestNewProbe(t *testing.T) {
 
 	tracker, _ = NewTracker("udp://tracker.debian.org/announce")
 
-	probe = NewProbe(tracker)
+	probe = NewProbe(tracker, 5)
 
 	assert.NotNil(t, probe)
 }
@@ -25,15 +25,15 @@ func TestProbeLookupIPs(t *testing.T) {
 	err = probe.LookupIPs()
 
 	assert.Nil(t, err)
-	assert.Equal(t, 1, len(probe.ipv4s))
-	assert.Regexp(t, regexp.MustCompile(`\d+\.\d+\.\d+\.\d+`), probe.ipv4s[0])
+	assert.Equal(t, 1, len(probe.addresses))
+	assert.Regexp(t, regexp.MustCompile(`\d+\.\d+\.\d+\.\d+`), probe.addresses[0])
 }
 
 func TestProbeReachableIPv4s(t *testing.T) {
 	var err error
 	var reachable []string
 
-	reachable, err = probe.ReachableIPv4s()
+	reachable, err = probe.ReachableAddresses()
 
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(reachable))

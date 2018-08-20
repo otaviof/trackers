@@ -4,11 +4,15 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"strings"
+	"time"
 )
 
+// Probe checks if a tracker is responding.
 type Probe struct {
-	tracker *Tracker
-	ipv4s   []string
+	tracker   *Tracker // tracker in probe
+	timeout   int      // dial timeout in seconds
+	addresses []string // addresses to probe
 }
 
 // protocol defines which protocol (TCP or UDP) should be used against tracker service.
@@ -31,8 +35,12 @@ func (p *Probe) protocol() (string, error) {
 	return proto, nil
 }
 
-// ReachableIPv4s check connectivity with tracker service IPv4 addresses, return the ones working.
-func (p *Probe) ReachableIPv4s() ([]string, error) {
+func (p *Probe) getTimeout() time.Duration {
+	return time.Duration(p.timeout) * time.Second
+}
+
+// ReachableAddresses check connectivity with tracker service IPv4 addresses, return the ones working.
+func (p *Probe) ReachableAddresses() ([]string, error) {
 	var conn net.Conn
 	var ipv4 string
 	var proto string
@@ -43,21 +51,25 @@ func (p *Probe) ReachableIPv4s() ([]string, error) {
 		return nil, err
 	}
 
-	log.Printf("Probing '%s' service...", p.tracker.Announce)
-	for _, ipv4 = range p.ipv4s {
+	for _, ipv4 = range p.addresses {
 		var serviceAndPort = fmt.Sprintf("%s:%d", ipv4, p.tracker.Port)
 
-		if conn, err = net.Dial(proto, serviceAndPort); err != nil {
-			log.Printf("[%s] Service is NOT available at: '%s'", proto, serviceAndPort)
-		} else {
-			log.Printf("[%s] Service is available at: '%s'", proto, serviceAndPort)
-			reachable = append(reachable, ipv4)
+		if ipv4 == "127.0.0.1" {
+			log.Printf("Skipping address 127.0.0.1")
+			continue
 		}
 
-		defer conn.Close()
+		// trying to dial tracker service, with timeout
+		if conn, err = net.DialTimeout(proto, serviceAndPort, p.getTimeout()); err != nil {
+			log.Printf("[%s] Service is NOT available at: '%s' (%s)", proto, serviceAndPort, err)
+		} else {
+			// if no error returned assuming it's reachable
+			log.Printf("[%s] Service is available at: '%s'", proto, serviceAndPort)
+			reachable = append(reachable, ipv4)
+			defer conn.Close()
+		}
 	}
 
-	log.Printf("Tracker is reachable over: '%s'", reachable)
 	return reachable, nil
 }
 
@@ -73,16 +85,24 @@ func (p *Probe) LookupIPs() error {
 
 	for _, IP = range IPs {
 		var ipv4 = IP.To4().String()
+
 		// ignoring "<nil>", since it represents tha IPv5 address
 		if ipv4 != "" && ipv4 != "<nil>" {
-			p.ipv4s = append(p.ipv4s, ipv4)
+			p.addresses = append(p.addresses, ipv4)
 		}
 	}
 
-	log.Printf("Tracker '%s' IPv4 addresses: '%v'", p.tracker.Hostname, p.ipv4s)
+	log.Printf("Tracker '%s' IPv4 addresses: '[%s]'",
+		p.tracker.Hostname, strings.Join(p.addresses, ", "))
 	return nil
 }
 
-func NewProbe(tracker *Tracker) *Probe {
-	return &Probe{tracker: tracker}
+// SetAddresses instead of using LookupIPs, you can set the addresses.
+func (p *Probe) SetAddresses(addresses []string) {
+	p.addresses = addresses
+}
+
+// NewProbe instantiate a probe object for a specific tracker.
+func NewProbe(tracker *Tracker, timeout int) *Probe {
+	return &Probe{tracker: tracker, timeout: timeout}
 }
