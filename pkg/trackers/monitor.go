@@ -29,7 +29,7 @@ func (m *Monitor) probeTracker(tracker *Tracker) (*Tracker, error) {
 	}
 
 	// executing probe, returning which addreses are reachable
-	if addresses, err = probe.ReachableIPv4s(); err != nil {
+	if addresses, err = probe.ReachableAddresses(); err != nil {
 		return nil, err
 	}
 
@@ -56,6 +56,11 @@ func (m *Monitor) Inspect(dryRun bool) error {
 
 	for _, tracker = range trackers {
 		var probedTracker *Tracker
+
+		if tracker.Status == 3 {
+			log.Printf("Skipping tracker in status '%d'", tracker.Status)
+			continue
+		}
 
 		log.Printf("Tracker: '%s' (hostname: '%s')", tracker.Announce, tracker.Hostname)
 		if probedTracker, err = m.probeTracker(tracker); err != nil {
