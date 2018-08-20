@@ -16,7 +16,7 @@ type List struct {
 }
 
 // AsEtcHosts print storage contents following /etc/hosts format.
-func (l *List) AsEtcHosts(status int) error {
+func (l *List) AsEtcHosts(status []int) error {
 	var trackers []*Tracker
 	var selectedTrackers []*Tracker
 	var tracker *Tracker
@@ -31,7 +31,7 @@ func (l *List) AsEtcHosts(status int) error {
 	for _, tracker = range trackers {
 		var matched bool
 
-		if status != -1 && tracker.Status != status {
+		if !l.intSliceContains(status, tracker.Status) {
 			continue
 		}
 		// skipping ip addresses stored as domains
@@ -119,8 +119,21 @@ func (l *List) sliceRemove(slice []string, remove string) []string {
 	return cleanSlice
 }
 
+// intSliceContains checks if a integer exists in a slice of integers.
+func (t *List) intSliceContains(slice []int, i int) bool {
+	var j int
+
+	for _, j = range slice {
+		if i == j {
+			return true
+		}
+	}
+
+	return false
+}
+
 // AsTable show contents of storage object as a ascii table.
-func (l *List) AsTable(status int) error {
+func (l *List) AsTable(status []int) error {
 	var trackers []*Tracker
 	var tracker *Tracker
 	var tableWriter *tablewriter.Table
@@ -134,7 +147,7 @@ func (l *List) AsTable(status int) error {
 	tableWriter.SetHeader([]string{"Hostname", "Announce", "Addresses", "Status"})
 
 	for _, tracker = range trackers {
-		if status != -1 && tracker.Status != status {
+		if !l.intSliceContains(status, tracker.Status) {
 			continue
 		}
 

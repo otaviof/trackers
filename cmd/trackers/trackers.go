@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"strconv"
 	"strings"
 
 	trackers "github.com/otaviof/trackers/pkg/trackers"
@@ -75,7 +76,17 @@ var listCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		var storage *trackers.Storage
 		var list *trackers.List
+		var status []int
+		var statusStr string
+		var statusInt int
 		var err error
+
+		for _, statusStr = range viper.GetStringSlice("status") {
+			if statusInt, err = strconv.Atoi(statusStr); err != nil {
+				log.Fatalf("[ERROR] %s", err)
+			}
+			status = append(status, statusInt)
+		}
 
 		if storage, err = trackers.NewStorage(viper.GetString("db-file")); err != nil {
 			log.Fatalf("[ERROR] %s", err)
@@ -84,11 +95,11 @@ var listCmd = &cobra.Command{
 		list = trackers.NewList(storage)
 
 		if viper.GetBool("etc-hosts") {
-			if err = list.AsEtcHosts(viper.GetInt("status")); err != nil {
+			if err = list.AsEtcHosts(status); err != nil {
 				log.Fatalf("[ERROR] %s", err)
 			}
 		} else {
-			if err = list.AsTable(viper.GetInt("status")); err != nil {
+			if err = list.AsTable(status); err != nil {
 				log.Fatalf("[ERROR] %s", err)
 			}
 		}
@@ -188,7 +199,7 @@ func listFlags() {
 
 	flagSet.Bool("etc-hosts", false, "Format data as '/etc/hosts'")
 	flagSet.String("output", "", "Save output to file.")
-	flagSet.Int("status", -1, "Filter trackers by status, '-1' shows all.")
+	flagSet.StringSlice("status", []string{"-1"}, "Filter trackers by status, '-1' shows all.")
 
 	if err := viper.BindPFlags(flagSet); err != nil {
 		log.Fatal(err)
