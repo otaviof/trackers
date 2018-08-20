@@ -11,7 +11,7 @@ var storage *Storage
 func TestNewStorage(t *testing.T) {
 	var err error
 
-	storage, err = NewStorage()
+	storage, err = NewStorage("/var/tmp/test.sqlite")
 
 	assert.Nil(t, err)
 }

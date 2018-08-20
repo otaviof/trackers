@@ -2,6 +2,7 @@ package trackers
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"strings"
 
@@ -12,6 +13,7 @@ import (
 type storageInterface interface {
 	Read() ([]*Tracker, error)
 	Write(trackers []*Tracker) error
+	Update(tracker *Tracker) error
 }
 
 // Storage persist trackers in sqlite
@@ -27,8 +29,9 @@ func (s *Storage) Read() ([]*Tracker, error) {
 	var err error
 
 	if rows, err = s.db.Query(`
-SELECT announce, addresses, status
-  FROM trackers;
+  SELECT announce, addresses, status
+    FROM trackers
+ORDER BY hostname;
     `); err != nil {
 		return nil, err
 	}
@@ -45,9 +48,8 @@ SELECT announce, addresses, status
 		if tracker, err = NewTracker(announce); err != nil {
 			return nil, err
 		}
-		if status != 99 {
-			tracker.Addresses = strings.Split(addresses, ",")
-		}
+		tracker.Addresses = strings.Split(addresses, ",")
+		tracker.Status = status
 
 		trackers = append(trackers, tracker)
 	}
@@ -71,28 +73,57 @@ func (s *Storage) Write(trackers []*Tracker) error {
 	}
 
 	if stmt, err = tx.Prepare(`
-INSERT INTO trackers(announce, addresses, status)
-     VALUES (?, ?, ?)
+INSERT INTO trackers(announce, addresses, hostname, status)
+     VALUES (?, ?, ?, ?);
     `); err != nil {
 		return err
 	}
 	defer stmt.Close()
 
 	for _, tracker = range trackers {
-		var addresses string
-		var status int
-
-		if len(tracker.Addresses) > 0 {
-			addresses = strings.Join(tracker.Addresses, ",")
-		} else {
-			addresses = "0.0.0.0"
-			status = 99
-		}
-
 		log.Printf("Saving '%s'", tracker.Announce)
-		if _, err = stmt.Exec(tracker.Announce, addresses, status); err != nil {
+		if _, err = stmt.Exec(
+			tracker.Announce,
+			strings.Join(tracker.Addresses, ","),
+			tracker.Hostname,
+			tracker.Status,
+		); err != nil {
 			return err
 		}
+	}
+
+	if err = tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Update entries in table that matches hostname, setting up addresses and status.
+func (s *Storage) Update(tracker *Tracker) error {
+	var tx *sql.Tx
+	var stmt *sql.Stmt
+	var err error
+
+	log.Printf("[Storage] Updating tracker '%s'", tracker.Announce)
+	if tx, err = s.db.Begin(); err != nil {
+		return err
+	}
+
+	if stmt, err = tx.Prepare(
+		fmt.Sprintf(`
+UPDATE trackers
+   SET addresses = '%s',
+       status = %d
+ WHERE announce = ?
+		`, strings.Join(tracker.Addresses, ","), tracker.Status),
+	); err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	if _, err = stmt.Exec(tracker.Announce); err != nil {
+		return err
 	}
 
 	if err = tx.Commit(); err != nil {
@@ -110,6 +141,7 @@ func (s *Storage) InitDB() error {
 CREATE TABLE IF NOT EXISTS trackers (
     announce    TEXT NOT NULL PRIMARY KEY,
     addresses   TEXT NOT NULL,
+    hostname    TEXT NOT NULL,
     status      INTEGER NOT NULL
 );
     `); err != nil {
@@ -120,11 +152,11 @@ CREATE TABLE IF NOT EXISTS trackers (
 }
 
 // NewStorage instantiate the storage backend.
-func NewStorage() (*Storage, error) {
+func NewStorage(dbPath string) (*Storage, error) {
 	var storage = &Storage{}
 	var err error
 
-	if storage.db, err = sql.Open("sqlite3", "/var/tmp/test.sqlite"); err != nil {
+	if storage.db, err = sql.Open("sqlite3", dbPath); err != nil {
 		return nil, err
 	}
 
