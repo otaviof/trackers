@@ -54,8 +54,8 @@ func (p *Probe) ReachableAddresses() ([]string, error) {
 	for _, ipv4 = range p.addresses {
 		var serviceAndPort = fmt.Sprintf("%s:%d", ipv4, p.tracker.Port)
 
-		if ipv4 == "127.0.0.1" {
-			log.Printf("Skipping address 127.0.0.1")
+		if ipv4 == "127.0.0.1" || ipv4 == "0.0.0.0" {
+			log.Printf("Skipping address '%s'", ipv4)
 			continue
 		}
 
