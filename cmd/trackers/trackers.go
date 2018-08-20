@@ -11,7 +11,7 @@ import (
 )
 
 /**
- * Commands
+ * Root Command
  */
 
 var rootCmd = &cobra.Command{
@@ -19,25 +19,25 @@ var rootCmd = &cobra.Command{
 	Short: "Keep track of trackers.",
 }
 
+/**
+ * Sub-Commands
+ */
+
 var addCmd = &cobra.Command{
 	Use:   "add",
 	Short: "Add a new tracker.",
 	Run: func(cmd *cobra.Command, args []string) {
-		var storage *trackers.Storage
 		var add *trackers.Add
 		var announce = viper.GetString("announce")
 		var addresses = strings.Split(viper.GetString("addresses"), ",")
 		var err error
 
+		// validating required option
 		if announce == "" {
 			log.Fatalf("[ERROR] --announce is required!")
 		}
 
-		if storage, err = trackers.NewStorage(viper.GetString("db-file")); err != nil {
-			log.Fatalf("[ERROR] %s", err)
-		}
-
-		add = trackers.NewAdd(storage, viper.GetInt("timeout"))
+		add = trackers.NewAdd(storageInstance(), viper.GetInt("timeout"))
 		if err = add.Tracker(announce, addresses, viper.GetBool("dry-run")); err != nil {
 			log.Fatalf("[ERROR] %s", err)
 		}
@@ -48,14 +48,9 @@ var harvestCmd = &cobra.Command{
 	Use:   "harvest",
 	Short: "Retreive trackers from torrent client.",
 	Run: func(cmd *cobra.Command, args []string) {
-		var storage *trackers.Storage
 		var client *trackers.Client
 		var harvest *trackers.Harvest
 		var err error
-
-		if storage, err = trackers.NewStorage(viper.GetString("db-file")); err != nil {
-			log.Fatalf("[ERROR] %s", err)
-		}
 
 		if client, err = trackers.NewClient(
 			viper.GetString("rpc-url"), viper.GetString("username"), viper.GetString("password"),
@@ -63,7 +58,7 @@ var harvestCmd = &cobra.Command{
 			log.Fatalf("[ERROR] %s", err)
 		}
 
-		harvest = trackers.NewHarvest(storage, client)
+		harvest = trackers.NewHarvest(storageInstance(), client)
 		if err = harvest.Execute(viper.GetBool("dry-run")); err != nil {
 			log.Fatalf("[ERROR] %s", err)
 		}
@@ -74,25 +69,21 @@ var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "Report about trackers.",
 	Run: func(cmd *cobra.Command, args []string) {
-		var storage *trackers.Storage
 		var list *trackers.List
 		var status []int
 		var statusStr string
 		var statusInt int
 		var err error
 
+		// parsing status flags to a slice of integers
 		for _, statusStr = range viper.GetStringSlice("status") {
 			if statusInt, err = strconv.Atoi(statusStr); err != nil {
-				log.Fatalf("[ERROR] %s", err)
+				log.Fatalf("[ERROR] Invalid --status flag: '%s'", err)
 			}
 			status = append(status, statusInt)
 		}
 
-		if storage, err = trackers.NewStorage(viper.GetString("db-file")); err != nil {
-			log.Fatalf("[ERROR] %s", err)
-		}
-
-		list = trackers.NewList(storage)
+		list = trackers.NewList(storageInstance())
 
 		if viper.GetBool("etc-hosts") {
 			if err = list.AsEtcHosts(status); err != nil {
@@ -110,15 +101,8 @@ var monitorCmd = &cobra.Command{
 	Use:   "monitor",
 	Short: "Monitor trackers functional status.",
 	Run: func(cmd *cobra.Command, args []string) {
-		var storage *trackers.Storage
-		var monitor *trackers.Monitor
+		var monitor = trackers.NewMonitor(storageInstance(), viper.GetInt("timeout"))
 		var err error
-
-		if storage, err = trackers.NewStorage(viper.GetString("db-file")); err != nil {
-			log.Fatalf("[ERROR] %s", err)
-		}
-
-		monitor = trackers.NewMonitor(storage, viper.GetInt("timeout"))
 
 		if err = monitor.Inspect(viper.GetBool("dry-run")); err != nil {
 			log.Fatalf("[ERROR] %s", err)
@@ -130,35 +114,48 @@ var updateCmd = &cobra.Command{
 	Use:   "update",
 	Short: "Update tracker hostname IPv4 addresses.",
 	Run: func(cmd *cobra.Command, args []string) {
-		var storage *trackers.Storage
 		var update *trackers.Update
 		var addresses = strings.Split(viper.GetString("addresses"), ",")
 		var hostname = viper.GetString("hostname")
 		var err error
 
+		// validating required options first
 		if hostname == "" {
-			log.Fatalf("[ERROR] --hostname is required!")
+			log.Fatalf("[ERROR] option --hostname is required!")
 		}
 		if len(addresses) == 0 {
-			log.Fatalf("[ERROR] --addresses is required!")
+			log.Fatalf("[ERROR] option --addresses is required!")
 		}
 
-		if storage, err = trackers.NewStorage(viper.GetString("db-file")); err != nil {
-			log.Fatalf("[ERROR] %s", err)
-		}
+		update = trackers.NewUpdate(storageInstance(), viper.GetInt("timeout"))
 
-		update = trackers.NewUpdate(storage, viper.GetInt("timeout"))
-
-		if err = update.HostnameAddress(viper.GetString("hostname"), addresses, viper.GetBool("dry-run")); err != nil {
+		if err = update.HostnameAddress(hostname, addresses, viper.GetBool("dry-run")); err != nil {
 			log.Fatalf("[ERROR] %s", err)
 		}
 	},
 }
 
 /**
+ * Helpers
+ */
+
+// storageInstance returns a Storage instance or die in error.
+func storageInstance() *trackers.Storage {
+	var storage *trackers.Storage
+	var err error
+
+	if storage, err = trackers.NewStorage(viper.GetString("db-file")); err != nil {
+		log.Fatalf("[ERROR] On instantiating Storage: '%s'", err)
+	}
+
+	return storage
+}
+
+/**
  * Flags
  */
 
+// rootFlags set the root command flags, and flags that are shared by more than one sub-command.
 func rootFlags() {
 	var flagSet = rootCmd.PersistentFlags()
 
@@ -172,6 +169,7 @@ func rootFlags() {
 	}
 }
 
+// addFlags set flags for add sub-command.
 func addFlags() {
 	var flagSet = addCmd.PersistentFlags()
 
@@ -182,6 +180,7 @@ func addFlags() {
 	}
 }
 
+// harvestFlags set flags for harvest sub-command.
 func harvestFlags() {
 	var flagSet = harvestCmd.PersistentFlags()
 
@@ -194,18 +193,21 @@ func harvestFlags() {
 	}
 }
 
+// listFlags set flgas for list sub-command.
 func listFlags() {
 	var flagSet = listCmd.PersistentFlags()
 
 	flagSet.Bool("etc-hosts", false, "Format data as '/etc/hosts'")
 	flagSet.String("output", "", "Save output to file.")
-	flagSet.StringSlice("status", []string{"-1"}, "Filter trackers by status, '-1' shows all.")
+	// using string since IntSlice is not present in viper
+	flagSet.StringSlice("status", []string{"-1"}, "Filter trackers by status.")
 
 	if err := viper.BindPFlags(flagSet); err != nil {
 		log.Fatal(err)
 	}
 }
 
+// monitorFlags set flags for monitor sub-command.
 func monitorFlags() {
 	var flagSet = monitorCmd.PersistentFlags()
 
@@ -214,6 +216,7 @@ func monitorFlags() {
 	}
 }
 
+// updateFlags set flags for update sub-command.
 func updateFlags() {
 	var flagSet = updateCmd.PersistentFlags()
 
@@ -228,6 +231,7 @@ func updateFlags() {
  * Execution
  */
 
+// init link Cobra commands with root.
 func init() {
 	addFlags()
 	rootFlags()
@@ -239,6 +243,7 @@ func init() {
 	rootCmd.AddCommand(addCmd, harvestCmd, listCmd, monitorCmd, updateCmd)
 }
 
+// main calls Cobra execute method.
 func main() {
 	var err error
 
