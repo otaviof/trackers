@@ -9,7 +9,7 @@ type Harvest struct {
 }
 
 // Execute runs throgh trackers coming from torrent-client and ...
-func (h *Harvest) Execute() error {
+func (h *Harvest) Execute(dryRun bool) error {
 	var trackers []*Tracker
 	var tracker *Tracker
 	var storedTrackers []*Tracker
@@ -49,9 +49,11 @@ func (h *Harvest) Execute() error {
 	}
 
 	if len(notStoredTrackers) > 0 {
-		log.Printf("Saving '%d' trackers...", len(notStoredTrackers))
-		if err = h.storage.Write(notStoredTrackers); err != nil {
-			return err
+		log.Printf("Saving '%d' trackers... (dry-run: %v)", len(notStoredTrackers), dryRun)
+		if !dryRun {
+			if err = h.storage.Write(notStoredTrackers); err != nil {
+				return err
+			}
 		}
 	}
 
