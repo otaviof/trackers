@@ -9,17 +9,12 @@ import (
 
 // Tracker defines a tracker
 type Tracker struct {
-	Announce string        // tracker original url
-	Hostname string        // tracker hostname
-	Port     int           // tracker port
-	Protocol string        // tracker protocol
-	Status   TrackerStatus // tracker status
-}
-
-// TrackerStatus exposes a given tracker funcitonal status
-type TrackerStatus struct {
-	Reachable      bool // tracker is reachable
-	HistoryAddress bool // tracker address is coming from history, not an updated entry
+	Announce  string   // tracker original url
+	Hostname  string   // tracker hostname
+	Port      int      // tracker port
+	Protocol  string   // tracker protocol
+	Addresses []string // resolved IP addresses
+	Status    int      // tracker status
 }
 
 // NewTracker parses the Announce URL.
@@ -51,9 +46,11 @@ func NewTracker(announce string) (*Tracker, error) {
 	}
 
 	return &Tracker{
-		Announce: announce,
-		Hostname: hostname,
-		Protocol: parsed.Scheme,
-		Port:     int(port),
+		Announce:  announce,
+		Hostname:  hostname,
+		Protocol:  parsed.Scheme,
+		Port:      int(port),
+		Addresses: []string{"0.0.0.0"},
+		Status:    99,
 	}, nil
 }

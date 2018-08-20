@@ -13,8 +13,8 @@ func TestNewTracker(t *testing.T) {
 
 	// testing with and without port in the url
 	for _, announce = range []string{
-		"udp://tracker.publicbt.com:80/announce",
-		"udp://tracker.publicbt.com/announce",
+		"udp://tracker.debian.org:80/announce",
+		"udp://tracker.debian.org/announce",
 	} {
 		tracker, err = NewTracker(announce)
 
@@ -22,7 +22,7 @@ func TestNewTracker(t *testing.T) {
 		assert.NotNil(t, tracker)
 
 		assert.Equal(t, announce, tracker.Announce)
-		assert.Equal(t, "tracker.publicbt.com", tracker.Hostname)
+		assert.Equal(t, "tracker.debian.org", tracker.Hostname)
 		assert.Equal(t, 80, tracker.Port)
 		assert.Equal(t, "udp", tracker.Protocol)
 	}
