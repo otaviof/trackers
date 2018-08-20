@@ -16,7 +16,7 @@ type List struct {
 }
 
 // AsEtcHosts print storage contents following /etc/hosts format.
-func (l *List) AsEtcHosts() error {
+func (l *List) AsEtcHosts(status int) error {
 	var trackers []*Tracker
 	var tracker *Tracker
 	var err error
@@ -28,6 +28,10 @@ func (l *List) AsEtcHosts() error {
 	for _, tracker = range trackers {
 		var address string
 		var matched bool
+
+		if status != -1 && tracker.Status != status {
+			continue
+		}
 
 		// skipping ipaddresses
 		if matched, _ = regexp.MatchString(`^\d+\.\d+\.\d+\.\d+$`, tracker.Hostname); matched {
@@ -43,7 +47,7 @@ func (l *List) AsEtcHosts() error {
 }
 
 // AsTable show contents of storage object as a ascii table.
-func (l *List) AsTable() error {
+func (l *List) AsTable(status int) error {
 	var trackers []*Tracker
 	var tracker *Tracker
 	var tableWriter *tablewriter.Table
@@ -57,6 +61,10 @@ func (l *List) AsTable() error {
 	tableWriter.SetHeader([]string{"Hostname", "Announce", "Addresses", "Status"})
 
 	for _, tracker = range trackers {
+		if status != -1 && tracker.Status != status {
+			continue
+		}
+
 		tableWriter.Append([]string{
 			tracker.Hostname,
 			tracker.Announce,
