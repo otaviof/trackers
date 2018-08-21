@@ -37,7 +37,7 @@ var addCmd = &cobra.Command{
 			log.Fatalf("[ERROR] --announce is required!")
 		}
 
-		add = trackers.NewAdd(storageInstance(), viper.GetInt("timeout"))
+		add = trackers.NewAdd(storageInstance(), viper.GetInt64("timeout"))
 		if err = add.Tracker(announce, addresses, viper.GetBool("dry-run")); err != nil {
 			log.Fatalf("[ERROR] %s", err)
 		}
@@ -101,7 +101,7 @@ var monitorCmd = &cobra.Command{
 	Use:   "monitor",
 	Short: "Monitor trackers functional status.",
 	Run: func(cmd *cobra.Command, args []string) {
-		var monitor = trackers.NewMonitor(storageInstance(), viper.GetInt("timeout"))
+		var monitor = trackers.NewMonitor(storageInstance(), viper.GetInt64("timeout"))
 		var err error
 
 		if err = monitor.Inspect(viper.GetBool("dry-run")); err != nil {
@@ -127,7 +127,7 @@ var updateCmd = &cobra.Command{
 			log.Fatalf("[ERROR] option --addresses is required!")
 		}
 
-		update = trackers.NewUpdate(storageInstance(), viper.GetInt("timeout"))
+		update = trackers.NewUpdate(storageInstance(), viper.GetInt64("timeout"))
 
 		if err = update.HostnameAddress(hostname, addresses, viper.GetBool("dry-run")); err != nil {
 			log.Fatalf("[ERROR] %s", err)
@@ -161,7 +161,7 @@ func rootFlags() {
 
 	flagSet.Bool("dry-run", false, "Dry-run mode, don't commit any data.")
 	flagSet.String("db-file", "/var/lib/trackers/trackers.sqlite", "SQLite database file path.")
-	flagSet.Int("timeout", 15, "Timeout probing trackers.")
+	flagSet.Int64("timeout", 15, "Timeout probing trackers.")
 	flagSet.String("addresses", "", "IPv4 addresses, comma-separated list.")
 
 	if err := viper.BindPFlags(flagSet); err != nil {
