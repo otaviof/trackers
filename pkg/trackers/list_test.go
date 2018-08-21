@@ -18,7 +18,7 @@ func TestNewList(t *testing.T) {
 func TestListAsEtcHosts(t *testing.T) {
 	var err error
 
-	err = list.AsEtcHosts(-1)
+	err = list.AsEtcHosts([]int{-1})
 
 	assert.Nil(t, err)
 }
@@ -26,7 +26,7 @@ func TestListAsEtcHosts(t *testing.T) {
 func TestListAsTable(t *testing.T) {
 	var err error
 
-	err = list.AsTable(-1)
+	err = list.AsTable([]int{-1})
 
 	assert.Nil(t, err)
 }

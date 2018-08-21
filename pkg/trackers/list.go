@@ -31,7 +31,7 @@ func (l *List) AsEtcHosts(status []int) error {
 	for _, tracker = range trackers {
 		var matched bool
 
-		if !l.intSliceContains(status, tracker.Status) {
+		if !intSliceEq(status, []int{-1}) && !intSliceContains(status, tracker.Status) {
 			continue
 		}
 		// skipping ip addresses stored as domains
@@ -73,7 +73,7 @@ func (l *List) groupByHostname(trackers []*Tracker) map[string][]string {
 				groupBy[hostname] = []string{address}
 			} else {
 				// only saving the non-duplicates
-				if !l.sliceContains(groupBy[hostname], address) {
+				if !stringSliceContains(groupBy[hostname], address) {
 					groupBy[hostname] = append(groupBy[hostname], address)
 				}
 			}
@@ -83,53 +83,12 @@ func (l *List) groupByHostname(trackers []*Tracker) map[string][]string {
 	// cleaning up results
 	for hostname, addresses = range groupBy {
 		// when a 0.0.0.0 entry is on the list, it must not contain other addresses
-		if len(addresses) > 1 && l.sliceContains(addresses, "0.0.0.0") {
-			groupBy[hostname] = l.sliceRemove(addresses, "0.0.0.0")
+		if len(addresses) > 1 && stringSliceContains(addresses, "0.0.0.0") {
+			groupBy[hostname] = stringSliceRemove(addresses, "0.0.0.0")
 		}
 	}
 
 	return groupBy
-}
-
-// sliceContains checks if a slice contiains a string.
-func (l *List) sliceContains(slice []string, str string) bool {
-	var sliceStr string
-
-	for _, sliceStr = range slice {
-		if str == sliceStr {
-			return true
-		}
-	}
-
-	return false
-}
-
-// sliceRemove removes a string from a slice.
-func (l *List) sliceRemove(slice []string, remove string) []string {
-	var str string
-	var cleanSlice []string
-
-	for _, str = range slice {
-		if remove == str {
-			continue
-		}
-		cleanSlice = append(cleanSlice, str)
-	}
-
-	return cleanSlice
-}
-
-// intSliceContains checks if a integer exists in a slice of integers.
-func (t *List) intSliceContains(slice []int, i int) bool {
-	var j int
-
-	for _, j = range slice {
-		if i == j {
-			return true
-		}
-	}
-
-	return false
 }
 
 // AsTable show contents of storage object as a ascii table.
@@ -147,7 +106,7 @@ func (l *List) AsTable(status []int) error {
 	tableWriter.SetHeader([]string{"Hostname", "Announce", "Addresses", "Status"})
 
 	for _, tracker = range trackers {
-		if !l.intSliceContains(status, tracker.Status) {
+		if !intSliceEq(status, []int{-1}) && !intSliceContains(status, tracker.Status) {
 			continue
 		}
 
