@@ -1,20 +1,22 @@
 package trackers
 
 import (
-	"context"
+	"crypto/tls"
 	"fmt"
 	"log"
 	"net"
 	"regexp"
-	"strings"
 	"time"
+
+	"github.com/miekg/dns"
 )
 
 // Probe checks if a tracker is responding.
 type Probe struct {
-	tracker   *Tracker // tracker in probe
-	timeout   int      // dial timeout in seconds
-	addresses []string // addresses to probe
+	tracker     *Tracker // tracker in probe
+	timeout     int64    // dial timeout in seconds
+	addresses   []string // addresses to probe
+	nameservers []string // nameservers to use on lookup
 }
 
 // protocol defines which protocol (TCP or UDP) should be used against tracker service.
@@ -35,10 +37,6 @@ func (p *Probe) protocol() (string, error) {
 	}
 
 	return proto, nil
-}
-
-func (p *Probe) getTimeout() time.Duration {
-	return time.Duration(p.timeout) * time.Second
 }
 
 // ReachableAddresses check connectivity with tracker service IPv4 addresses, return the ones working.
@@ -75,39 +73,69 @@ func (p *Probe) ReachableAddresses() ([]string, error) {
 	return reachable, nil
 }
 
-func DnsDialer(ctx context.Context, network, address string) (net.Conn, error) {
-	var dialer = net.Dialer{}
-	return dialer.DialContext(ctx, "udp", "1.1.1.1:53")
+// getTimeout as time.Duration
+func (p *Probe) getTimeout() time.Duration {
+	return time.Duration(p.timeout) * time.Second
 }
 
-// LookupIPs resolve tracker's hostname IPv4 addresses
-func (p *Probe) LookupIPs() error {
-	var resolver net.Resolver
-	var ctx context.Context
-	var IPs []net.IPAddr
-	var IP net.IPAddr
+// dnsQuery executes the actual dns query against nameservers.
+func (p *Probe) dnsQuery(client *dns.Client) ([]string, error) {
+	var msg *dns.Msg
+	var resp *dns.Msg
+	var addresses []string
+	var ns string
 	var err error
 
-	resolver = net.Resolver{PreferGo: true, Dial: DnsDialer}
-	ctx = context.Background()
+	msg = &dns.Msg{
+		MsgHdr:   dns.MsgHdr{RecursionDesired: true},
+		Question: make([]dns.Question, 1),
+	}
+	msg.SetQuestion(dns.Fqdn(p.tracker.Hostname), dns.TypeA)
 
-	if IPs, err = resolver.LookupIPAddr(ctx, p.tracker.Hostname); err != nil {
+	for _, ns = range p.nameservers {
+		if resp, _, err = client.Exchange(msg, ns); err != nil {
+			return nil, err
+		}
+
+		for _, answer := range resp.Answer {
+			switch t := answer.(type) {
+			case *dns.A:
+				addresses = append(addresses, t.A.String())
+			}
+		}
+	}
+
+	return addresses, nil
+}
+
+// LookupAddresses uses dns-query results, disanbiguate the entries and only keep ipv4 addresses.
+func (p *Probe) LookupAddresses() error {
+	var client *dns.Client
+	var addresses []string
+	var address string
+	var err error
+
+	client = &dns.Client{
+		Net:       "tcp-tls",
+		Timeout:   p.getTimeout(),
+		TLSConfig: &tls.Config{InsecureSkipVerify: false},
+	}
+
+	if addresses, err = p.dnsQuery(client); err != nil {
 		return err
 	}
 
-	for _, IP = range IPs {
-		var ipv4 = IP.String()
-		var matched bool
+	for _, address = range addresses {
+		var match bool
 
-		if matched, _ = regexp.MatchString(`^\d+\.\d+\.\d+\.\d+$`, ipv4); !matched {
+		if match, _ = regexp.MatchString(`^\d+\.\d+\.\d+\.\d+$`, address); !match {
 			continue
 		}
-
-		p.addresses = append(p.addresses, ipv4)
+		if !stringSliceContains(p.addresses, address) {
+			p.addresses = append(p.addresses, address)
+		}
 	}
 
-	log.Printf("Tracker '%s' IPv4 addresses: '[%s]'",
-		p.tracker.Hostname, strings.Join(p.addresses, ", "))
 	return nil
 }
 
@@ -117,6 +145,7 @@ func (p *Probe) SetAddresses(addresses []string) {
 }
 
 // NewProbe instantiate a probe object for a specific tracker.
-func NewProbe(tracker *Tracker, timeout int) *Probe {
-	return &Probe{tracker: tracker, timeout: timeout}
+func NewProbe(tracker *Tracker, timeout int64) *Probe {
+	var nameservers = []string{"1.1.1.1:853", "1.0.0.1:853"}
+	return &Probe{tracker: tracker, timeout: timeout, nameservers: nameservers}
 }

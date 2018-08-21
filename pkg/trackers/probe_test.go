@@ -19,17 +19,17 @@ func TestNewProbe(t *testing.T) {
 	assert.NotNil(t, probe)
 }
 
-func TestProbeLookupIPs(t *testing.T) {
+func TestProbeLookupAddresses(t *testing.T) {
 	var err error
 
-	err = probe.LookupIPs()
+	err = probe.LookupAddresses()
 
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(probe.addresses))
 	assert.Regexp(t, regexp.MustCompile(`\d+\.\d+\.\d+\.\d+`), probe.addresses[0])
 }
 
-func TestProbeReachableIPv4s(t *testing.T) {
+func TestProbeReachableAddresses(t *testing.T) {
 	var err error
 	var reachable []string
 
