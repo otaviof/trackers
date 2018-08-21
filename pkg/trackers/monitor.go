@@ -5,7 +5,7 @@ import "log"
 // Monitor monitor instance
 type Monitor struct {
 	storage storageInterface
-	timeout int
+	timeout int64
 }
 
 // probedTracker execute the probes and name resolver against informed tracker, it returns a new
@@ -23,7 +23,7 @@ func (m *Monitor) probeTracker(tracker *Tracker) (*Tracker, error) {
 	probedTracker.Addresses = []string{"0.0.0.0"}
 
 	// resolving tracker ip addresses
-	if err = probe.LookupIPs(); err != nil {
+	if err = probe.LookupAddresses(); err != nil {
 		log.Printf("[DNS] Can't rsolve tracker's address: '%s'", err)
 		return probedTracker, nil
 	}
@@ -81,6 +81,6 @@ func (m *Monitor) Inspect(dryRun bool) error {
 }
 
 // NewMonitor instantiate a monitor object, requires storage interface.
-func NewMonitor(storage storageInterface, timeout int) *Monitor {
+func NewMonitor(storage storageInterface, timeout int64) *Monitor {
 	return &Monitor{storage: storage, timeout: timeout}
 }

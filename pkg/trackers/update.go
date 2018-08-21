@@ -8,7 +8,7 @@ import (
 // Update object to execute updates in storage, validating addresses.
 type Update struct {
 	storage storageInterface // interface with storage
-	timeout int              // timeout on probes
+	timeout int64            // timeout on probes
 }
 
 // probeAddresses creates a new tracker based on original and its new addresses, executing Probe
@@ -80,6 +80,6 @@ func (u *Update) HostnameAddress(hostname string, addresses []string, dryRun boo
 }
 
 // NewUpdate returns a update instnace.
-func NewUpdate(storage storageInterface, timeout int) *Update {
+func NewUpdate(storage storageInterface, timeout int64) *Update {
 	return &Update{storage: storage, timeout: timeout}
 }
