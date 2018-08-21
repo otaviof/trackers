@@ -5,11 +5,15 @@ import (
 	"strings"
 )
 
+// Add handles adding a new tracker to storage.
 type Add struct {
-	storage storageInterface
-	timeout int
+	storage storageInterface // storage interface
+	timeout int              // probe timeout in seconds
 }
 
+// Tracker includes a new tracker in storage, when addresses are informed, it will execute Probe
+// against those addresses, if empty, it will use regular DNS queries. When a non-reachable Tracker
+// is added it will hold status 99, and 0.0.0.0 addresses, the default behaviour.
 func (a *Add) Tracker(announce string, addresses []string, dryRun bool) error {
 	var tracker *Tracker
 	var probe *Probe
@@ -48,6 +52,7 @@ func (a *Add) Tracker(announce string, addresses []string, dryRun bool) error {
 	return a.storage.Write([]*Tracker{tracker})
 }
 
+// NewAdd instantiate Add, using storage and global timeout.
 func NewAdd(storage storageInterface, timeout int) *Add {
 	return &Add{storage: storage, timeout: timeout}
 }
