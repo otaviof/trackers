@@ -22,7 +22,7 @@ var dryRun bool
 func init() {
 	var flagSet = rootCmd.PersistentFlags()
 
-	cobra.OnInitialize(loadConfig)
+	cobra.OnInitialize(load)
 
 	flagSet.String("config", "/etc/trackers/trackers.yaml", "Trackers configuration file path.")
 
