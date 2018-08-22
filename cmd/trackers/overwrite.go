@@ -11,8 +11,7 @@ import (
 var overwriteCmd = &cobra.Command{
 	Use:   "overwrite",
 	Short: "Overwrite tracker hostname's IPv4 addresses.",
-	Run: func(cmd *cobra.Command, args []string) {
-	},
+	Run:   runOverwriteCmd,
 }
 
 var hostname string
@@ -31,8 +30,11 @@ func init() {
 
 func runOverwriteCmd(cmd *cobra.Command, args []string) {
 	var overwrite *trackers.Overwrite
-	var hostname = viper.GetString("hostname")
 	var err error
+
+	if hostname == "" {
+		log.Fatal("[ERROR] Parameter --hostname is required!")
+	}
 
 	overwrite = trackers.NewOverwrite(storage, config)
 
