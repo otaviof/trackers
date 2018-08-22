@@ -30,13 +30,13 @@ func init() {
 }
 
 func runOverwriteCmd(cmd *cobra.Command, args []string) {
-	var update *trackers.Update
+	var overwrite *trackers.Overwrite
 	var hostname = viper.GetString("hostname")
 	var err error
 
-	update = trackers.NewUpdate(storage, config)
+	overwrite = trackers.NewOverwrite(storage, config)
 
-	if err = update.HostnameAddress(hostname, addresses, viper.GetBool("dry-run")); err != nil {
+	if err = overwrite.HostnameAddress(hostname, addresses, viper.GetBool("dry-run")); err != nil {
 		log.Fatalf("[ERROR] %s", err)
 	}
 

@@ -5,15 +5,15 @@ import (
 	"strings"
 )
 
-// Update object to execute updates in storage, validating addresses.
-type Update struct {
+// Overwrite object to execute updates in storage, validating addresses.
+type Overwrite struct {
 	storage storageInterface // interface with storage
 	config  *Config          // configuration
 }
 
 // probeAddresses creates a new tracker based on original and its new addresses, executing Probe
 // against new addresses, when successful returns a new Tracker object.
-func (u *Update) probeAddresses(tracker *Tracker, addresses []string) (*Tracker, error) {
+func (u *Overwrite) probeAddresses(tracker *Tracker, addresses []string) (*Tracker, error) {
 	var updatedTracker *Tracker
 	var recheableAddresses []string
 	var probe *Probe
@@ -45,7 +45,7 @@ func (u *Update) probeAddresses(tracker *Tracker, addresses []string) (*Tracker,
 }
 
 // HostnameAddress handle updates for all trackers that are matching hostname.
-func (u *Update) HostnameAddress(hostname string, addresses []string, dryRun bool) error {
+func (u *Overwrite) HostnameAddress(hostname string, addresses []string, dryRun bool) error {
 	var trackers []*Tracker
 	var tracker *Tracker
 	var err error
@@ -79,7 +79,7 @@ func (u *Update) HostnameAddress(hostname string, addresses []string, dryRun boo
 	return nil
 }
 
-// NewUpdate returns a update instnace.
-func NewUpdate(storage storageInterface, config *Config) *Update {
-	return &Update{storage: storage, config: config}
+// NewOverwrite returns a overwrite instnace.
+func NewOverwrite(storage storageInterface, config *Config) *Overwrite {
+	return &Overwrite{storage: storage, config: config}
 }
