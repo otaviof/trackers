@@ -10,7 +10,9 @@ var list *List
 
 func TestNewList(t *testing.T) {
 	var storage *Storage
-	storage, _ = NewStorage("/var/tmp/test.sqlite")
+	var config = &Config{Persistence: PersistenceConfig{DbPath: "/var/tmp/test.sqlite"}}
+
+	storage, _ = NewStorage(config)
 
 	list = NewList(storage)
 }

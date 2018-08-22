@@ -8,7 +8,7 @@ import (
 // Update object to execute updates in storage, validating addresses.
 type Update struct {
 	storage storageInterface // interface with storage
-	timeout int64            // timeout on probes
+	config  *Config          // configuration
 }
 
 // probeAddresses creates a new tracker based on original and its new addresses, executing Probe
@@ -25,7 +25,7 @@ func (u *Update) probeAddresses(tracker *Tracker, addresses []string) (*Tracker,
 	// marking tracker as updated
 	updatedTracker.Status = 3
 
-	probe = NewProbe(updatedTracker, u.timeout)
+	probe = NewProbe(updatedTracker, u.config.Probe.Timeout)
 	probe.SetAddresses(addresses)
 
 	if recheableAddresses, err = probe.ReachableAddresses(); err != nil {
@@ -80,6 +80,6 @@ func (u *Update) HostnameAddress(hostname string, addresses []string, dryRun boo
 }
 
 // NewUpdate returns a update instnace.
-func NewUpdate(storage storageInterface, timeout int64) *Update {
-	return &Update{storage: storage, timeout: timeout}
+func NewUpdate(storage storageInterface, config *Config) *Update {
+	return &Update{storage: storage, config: config}
 }

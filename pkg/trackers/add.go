@@ -8,7 +8,7 @@ import (
 // Add handles adding a new tracker to storage.
 type Add struct {
 	storage storageInterface // storage interface
-	timeout int64            // probe timeout in seconds
+	config  *Config          // configuration
 }
 
 // Tracker includes a new tracker in storage, when addresses are informed, it will execute Probe
@@ -26,7 +26,8 @@ func (a *Add) Tracker(announce string, addresses []string, dryRun bool) error {
 		return err
 	}
 
-	probe = NewProbe(tracker, a.timeout)
+	probe = NewProbe(tracker, a.config.Probe.Timeout)
+
 	if len(addresses) == 0 {
 		if err = probe.LookupAddresses(); err != nil {
 			return err
@@ -53,6 +54,6 @@ func (a *Add) Tracker(announce string, addresses []string, dryRun bool) error {
 }
 
 // NewAdd instantiate Add, using storage and global timeout.
-func NewAdd(storage storageInterface, timeout int64) *Add {
-	return &Add{storage: storage, timeout: timeout}
+func NewAdd(storage storageInterface, config *Config) *Add {
+	return &Add{storage: storage, config: config}
 }

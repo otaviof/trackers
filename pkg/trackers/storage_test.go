@@ -9,9 +9,10 @@ import (
 var storage *Storage
 
 func TestNewStorage(t *testing.T) {
+	var config = &Config{Persistence: PersistenceConfig{DbPath: "/var/tmp/test.sqlite"}}
 	var err error
 
-	storage, err = NewStorage("/var/tmp/test.sqlite")
+	storage, err = NewStorage(config)
 
 	assert.Nil(t, err)
 }

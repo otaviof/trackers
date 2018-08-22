@@ -152,11 +152,11 @@ CREATE TABLE IF NOT EXISTS trackers (
 }
 
 // NewStorage instantiate the storage backend.
-func NewStorage(dbPath string) (*Storage, error) {
+func NewStorage(config *Config) (*Storage, error) {
 	var storage = &Storage{}
 	var err error
 
-	if storage.db, err = sql.Open("sqlite3", dbPath); err != nil {
+	if storage.db, err = sql.Open("sqlite3", config.Persistence.DbPath); err != nil {
 		return nil, err
 	}
 

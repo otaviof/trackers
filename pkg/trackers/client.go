@@ -85,14 +85,14 @@ func (c *Client) ListTorrents() ([]*Torrent, error) {
 }
 
 // NewClient instantiate a transmission API client.
-func NewClient(address string, user string, pass string) (*Client, error) {
+func NewClient(config *Config) (*Client, error) {
 	var client = &Client{}
 	var err error
 
 	if client.t, err = trans.New(trans.Config{
-		Address:  address,
-		User:     user,
-		Password: pass,
+		Address:  config.Transmission.URL,
+		User:     config.Transmission.Username,
+		Password: config.Transmission.Password,
 	}); err != nil {
 		return nil, err
 	}
