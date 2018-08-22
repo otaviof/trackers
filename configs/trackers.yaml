@@ -1,0 +1,15 @@
+---
+transmission:
+  url: http://127.0.0.1:9091/transmission/rpc
+  username: username
+  password: password
+
+persistence:
+  dbPath: /var/lib/trackers/trackers.sqlite
+
+probe:
+  timeout: 11
+
+nameservers:
+  - 1.1.1.1:853
+  - 1.0.0.1:853
