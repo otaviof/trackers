@@ -13,16 +13,19 @@ var monitorCmd = &cobra.Command{
 	Run:   runMonitorCmd,
 }
 
+var workers int // amount of workers
+
 func init() {
 	var flagSet = monitorCmd.PersistentFlags()
 
 	flagSet.BoolVar(&dryRun, "dry-run", false, "Dry-run mode.")
+	flagSet.IntVar(&workers, "workers", 4, "Amount of workers for parallel probes.")
 
 	rootCmd.AddCommand(monitorCmd)
 }
 
 func runMonitorCmd(cmd *cobra.Command, args []string) {
-	var monitor = trackers.NewMonitor(storage, config)
+	var monitor = trackers.NewMonitor(storage, config, workers)
 	var err error
 
 	if err = monitor.Inspect(dryRun); err != nil {

@@ -17,7 +17,7 @@ func TestNewMonitor(t *testing.T) {
 	var storage *Storage
 
 	storage, _ = NewStorage(config)
-	monitor = NewMonitor(storage, config)
+	monitor = NewMonitor(storage, config, 1)
 }
 
 func TestMonitorInspect(t *testing.T) {
