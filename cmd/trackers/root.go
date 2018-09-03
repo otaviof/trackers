@@ -12,13 +12,20 @@ import (
 
 var rootCmd = &cobra.Command{
 	Use:   "trackers",
-	Short: "Keep track of trackers.",
+	Short: "Track and monitor tracker services.",
+	Long: `
+Book-keeping application focused in Torrent Tracker services. Keep a up-to-date database (SQLite3)
+with the trackers URI, hostname and service status. Using "trackers" you can harvest new instances,
+and monitor their functional status over time. Please consider the sub-commands to see the other
+actions that you can execute.
+	`,
 }
 
-var config *trackers.Config
-var storage *trackers.Storage
-var dryRun bool
+var config *trackers.Config   // global configuration
+var storage *trackers.Storage // storage interface
+var dryRun bool               // dry-run flag, used in a number of sub-commands
 
+// init instantiate command, with loading setps and command-line flags.
 func init() {
 	var flagSet = rootCmd.PersistentFlags()
 
@@ -31,11 +38,13 @@ func init() {
 	}
 }
 
+// load execute load methods.
 func load() {
 	loadConfig()
 	storageInstance()
 }
 
+// loadConfig read configuratoin file from informed location, export a instance of config.
 func loadConfig() {
 	var configPath = viper.GetString("config")
 	var bytes []byte

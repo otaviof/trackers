@@ -10,12 +10,21 @@ import (
 
 var overwriteCmd = &cobra.Command{
 	Use:   "overwrite",
-	Short: "Overwrite tracker hostname's IPv4 addresses.",
 	Run:   runOverwriteCmd,
+	Short: "Overwrite tracker hostname's IPv4 addresses.",
+	Long: `
+Overwrite command allows you set a given IPv4 address to a given tracker's hostname. Keep in mind
+that the IPv4 address belongs to the hostname, and therefore it may affect more than a single
+entry in the database.
+
+Upon overwrite the IPv4 addresses will be probed, they must be responsive accordingly to the announce
+URL that will be relying in that hostname.
+	`,
 }
 
-var hostname string
+var hostname string // tracker hostname
 
+// init bind command-line flags, and overwrite sub-command in root command.
 func init() {
 	var flagSet = overwriteCmd.PersistentFlags()
 
@@ -28,6 +37,7 @@ func init() {
 	rootCmd.AddCommand(overwriteCmd)
 }
 
+// runOverwriteCmd executes overwrite sub-command.
 func runOverwriteCmd(cmd *cobra.Command, args []string) {
 	var overwrite *trackers.Overwrite
 	var err error

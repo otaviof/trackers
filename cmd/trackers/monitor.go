@@ -15,6 +15,7 @@ var monitorCmd = &cobra.Command{
 
 var workers int // amount of workers
 
+// init bind command line flags, and monitor sub-command in root command.
 func init() {
 	var flagSet = monitorCmd.PersistentFlags()
 
@@ -24,6 +25,7 @@ func init() {
 	rootCmd.AddCommand(monitorCmd)
 }
 
+// runMonitorCmd execute monitor sub-command.
 func runMonitorCmd(cmd *cobra.Command, args []string) {
 	var monitor = trackers.NewMonitor(storage, config, workers)
 	var err error

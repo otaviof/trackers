@@ -9,10 +9,14 @@ import (
 
 var harvestCmd = &cobra.Command{
 	Use:   "harvest",
-	Short: "Retreive trackers from torrent client.",
 	Run:   runHarvestCmd,
+	Short: "Reaper new trackers from torrent client.",
+	Long: `
+Harvest trackers from torrent client, adding the new entries in the database.
+	`,
 }
 
+// init bind command-line flags and sub-command in main command.
 func init() {
 	var flagSet = harvestCmd.PersistentFlags()
 
@@ -21,6 +25,7 @@ func init() {
 	rootCmd.AddCommand(harvestCmd)
 }
 
+// runHarvestCmd execute harvest sub-command.
 func runHarvestCmd(cmd *cobra.Command, args []string) {
 	var client *trackers.Client
 	var harvest *trackers.Harvest

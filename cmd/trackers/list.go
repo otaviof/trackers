@@ -10,23 +10,38 @@ import (
 
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "Report about trackers.",
-	Run:   executeListCmd,
+	Run:   runListCmd,
+	Short: "List trackers.",
+	Long: `
+Read information from database and display table for "/etc/hosts" style, table format is handy for
+ad-hoc usage, while "/etc/hosts" can be used to cache Tracker hostnames locally.
+
+Trackers can also be filtered by functional status:
+  - 0: service is reachable and responding;
+  - 1: Can't resolv tracker's hostname;
+  - 2: service does not respond;
+  - 3: tracker was overwritten by "trackers overwrite";
+	`,
+	Example: `
+trackers list --status "0,1"
+trackers list --status 0 --etc-hosts`,
 }
 
-var etcHosts bool
-var status []string
+var etcHosts bool   // show data as etc-hosts format
+var status []string // status filter
 
+// init link command line arguments and join sub-command on main command.
 func init() {
 	var flagSet = listCmd.PersistentFlags()
 
-	flagSet.BoolVar(&etcHosts, "etc-hosts", false, "Format data as '/etc/hosts'")
-	flagSet.StringSliceVar(&status, "status", []string{"-1"}, "Filter trackers by status.")
+	flagSet.BoolVar(&etcHosts, "etc-hosts", false, "Format output as '/etc/hosts' style.")
+	flagSet.StringSliceVar(&status, "status", []string{"-1"}, "Comma-separated list of status.")
 
 	rootCmd.AddCommand(listCmd)
 }
 
-func executeListCmd(cmd *cobra.Command, args []string) {
+// runListCmd execute the List sub-command.
+func runListCmd(cmd *cobra.Command, args []string) {
 	var list *trackers.List
 	var statusIntSlice []int
 	var i int

@@ -9,13 +9,18 @@ import (
 
 var addCmd = &cobra.Command{
 	Use:   "add",
-	Short: "Add a new tracker.",
 	Run:   runAddCmd,
+	Short: "Add a new tracker.",
+	Long: `
+Adds a new tracker in the database. On adding it will check if informed address(es) are responding,
+accordingly with the announce URL protocol and port.
+	`,
 }
 
-var announce string
-var addresses []string
+var announce string    // announce URL
+var addresses []string // tracker addresses
 
+// init bind commnad-line flags and sub-command in root command.
 func init() {
 	var flagSet = addCmd.PersistentFlags()
 
@@ -28,6 +33,7 @@ func init() {
 	rootCmd.AddCommand(addCmd)
 }
 
+// runAddCmd executes Add sub-command.
 func runAddCmd(cmd *cobra.Command, args []string) {
 	var add *trackers.Add
 	var err error
