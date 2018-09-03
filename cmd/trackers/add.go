@@ -25,7 +25,7 @@ func init() {
 	var flagSet = addCmd.PersistentFlags()
 
 	flagSet.StringVar(&announce, "announce", "", "Tracker announce URL.")
-	flagSet.StringSliceVar(&addresses, "addresses", []string{}, "Tracker addresses, comma separated list.")
+	flagSet.StringSliceVar(&addresses, "addresses", []string{}, "Comma separated list of addresses.")
 	flagSet.BoolVar(&dryRun, "dry-run", false, "Dry-run mode.")
 
 	addCmd.MarkFlagRequired("announce")
