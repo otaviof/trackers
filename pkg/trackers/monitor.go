@@ -8,12 +8,11 @@ import (
 
 // Monitor monitor instance
 type Monitor struct {
-	storage storageInterface
-	config  *Config
-	workers int
+	storage storageInterface // storage interface
+	config  *Config          // global configuration
+	workers int              // amount of workers
+	wg      sync.WaitGroup   // sync wait group
 }
-
-var wg sync.WaitGroup
 
 // probedTracker execute the probes and name resolver against informed tracker, it returns a new
 // tracker instance with up-to-date fields regarding its functional status.
@@ -61,7 +60,7 @@ func (m *Monitor) worker(id int, in <-chan *Tracker, out chan<- *Tracker) {
 		if probed, err = m.probeTracker(tracker); err != nil {
 			log.Fatal(err)
 		}
-		wg.Add(1)
+		m.wg.Add(1)
 		out <- probed
 	}
 }
@@ -112,7 +111,7 @@ func (m *Monitor) Inspect(dryRun bool) error {
 		in <- tracker
 	}
 	close(in)
-	wg.Wait()
+	m.wg.Wait()
 
 	for i = 0; i < len(trackers); i++ {
 		tracker = <-out
