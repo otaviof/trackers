@@ -11,6 +11,7 @@ type Harvest struct {
 // Execute runs throgh trackers coming from torrent-client and ...
 func (h *Harvest) Execute(dryRun bool) error {
 	var trackers []*Tracker
+	var torrents []*Torrent
 	var tracker *Tracker
 	var storedTrackers []*Tracker
 	var storedTracker *Tracker
@@ -19,11 +20,14 @@ func (h *Harvest) Execute(dryRun bool) error {
 
 	log.Print("Harvesting running trackers...")
 
-	if trackers, err = h.client.ListTrackers(); err != nil {
-		log.Fatalf("Error on listing trackers: '%s'", err)
+	if torrents, err = h.client.ListTorrents([]int{}); err != nil {
+		log.Fatalf("Error on listing torrents: '%s'", err)
 		return err
 	}
+
+	trackers = h.client.ListTrackers(torrents)
 	log.Printf("Found '%d' trackers in torrents", len(trackers))
+
 	if storedTrackers, err = h.storage.Read(); err != nil {
 		log.Fatalf("Error on reading stored trackers: '%s'", err)
 		return err

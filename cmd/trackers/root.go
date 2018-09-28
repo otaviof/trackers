@@ -23,6 +23,7 @@ actions that you can execute.
 
 var config *trackers.Config   // global configuration
 var storage *trackers.Storage // storage interface
+var statuses []string         // status filter, used in filter and update sub-commands
 var dryRun bool               // dry-run flag, used in a number of sub-commands
 
 // init instantiate command, with loading setps and command-line flags.

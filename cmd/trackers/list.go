@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"strconv"
 
 	trackers "github.com/otaviof/trackers/pkg/trackers"
 	"github.com/spf13/cobra"
@@ -27,15 +26,14 @@ trackers list --status "0,1"
 trackers list --status 0 --etc-hosts`,
 }
 
-var etcHosts bool   // show data as etc-hosts format
-var status []string // status filter
+var etcHosts bool // show data as etc-hosts format
 
 // init link command line arguments and join sub-command on main command.
 func init() {
 	var flagSet = listCmd.PersistentFlags()
 
 	flagSet.BoolVar(&etcHosts, "etc-hosts", false, "Format output as '/etc/hosts' style.")
-	flagSet.StringSliceVar(&status, "status", []string{"-1"}, "Comma-separated list of status.")
+	flagSet.StringSliceVar(&statuses, "status", []string{"-1"}, "Comma-separated list of status.")
 
 	rootCmd.AddCommand(listCmd)
 }
@@ -44,15 +42,10 @@ func init() {
 func runListCmd(cmd *cobra.Command, args []string) {
 	var list *trackers.List
 	var statusIntSlice []int
-	var i int
 	var err error
 
-	// parsing status flags to a slice of integers
-	for _, s := range status {
-		if i, err = strconv.Atoi(s); err != nil {
-			log.Fatalf("[ERROR] Invalid --status flag: '%s'", err)
-		}
-		statusIntSlice = append(statusIntSlice, i)
+	if statusIntSlice, err = trackers.StringSliceToInt(statuses); err != nil {
+		log.Fatalf("[ERROR] Invalid --status flag: '%s'", err)
 	}
 
 	list = trackers.NewList(storage)
