@@ -48,3 +48,14 @@ func TestUtilsIntSliceEq(t *testing.T) {
 	equals = intSliceEq(sliceA, []int{1})
 	assert.False(t, equals)
 }
+
+func TestUtilsStringSliceToInt(t *testing.T) {
+	var sliceA = []string{"1", "2", "3"}
+	var sliceB = []int{1, 2, 3}
+	var slice []int
+	var err error
+
+	slice, err = stringSliceToInt(sliceA)
+	assert.Nil(t, err)
+	assert.Equal(t, sliceB, slice)
+}

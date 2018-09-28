@@ -1,5 +1,9 @@
 package trackers
 
+import (
+	"strconv"
+)
+
 // stringSliceContains checks if a slice contiains a string.
 func stringSliceContains(slice []string, str string) bool {
 	var sliceStr string
@@ -59,4 +63,21 @@ func intSliceEq(sliceA []int, sliceB []int) bool {
 	}
 
 	return true
+}
+
+// StringSliceToInt converts a slice of strings to a slice of integers.
+func StringSliceToInt(slice []string) ([]int, error) {
+	var sliceInt []int
+	var s string
+	var i int
+	var err error
+
+	for _, s = range slice {
+		if i, err = strconv.Atoi(s); err != nil {
+			return nil, err
+		}
+		sliceInt = append(sliceInt, i)
+	}
+
+	return sliceInt, nil
 }
