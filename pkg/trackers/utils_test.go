@@ -55,7 +55,7 @@ func TestUtilsStringSliceToInt(t *testing.T) {
 	var slice []int
 	var err error
 
-	slice, err = stringSliceToInt(sliceA)
+	slice, err = StringSliceToInt(sliceA)
 	assert.Nil(t, err)
 	assert.Equal(t, sliceB, slice)
 }

@@ -24,7 +24,6 @@ URL that will be relying in that hostname.
 
 var hostname string // tracker hostname
 
-// init bind command-line flags, and overwrite sub-command in root command.
 func init() {
 	var flagSet = overwriteCmd.PersistentFlags()
 
