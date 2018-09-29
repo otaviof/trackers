@@ -134,8 +134,22 @@ nameservers:
 
 ## Workflow
 
-(Steps to use and map stuff on /etc/hosts...)
+A common workflow for Trackers, is the following:
 
-## Tracker Status
+``` bash
+# harvest running trackers
+trackers harvest && \
+  # monitor functional status
+  trackers monitor && \
+  # filter working trackers and map them in /etc/hosts
+  trackers list --etc-hosts |sort >> /etc/hosts && \
+  # update running torrents with working trackers
+  trackers update
+```
 
-(describe what means the `int` status per tracker...)
+You may also schedule sub-commands to run, so here goes a suggestion:
+
+- `harvest`: every few minutes, for instance 10 minutes;
+- `monitor`: once a day, maybe twice a day;
+- `list`: and updating local `/etc/hosts`, should be execute right after you run `monitor` command;
+- `update`: also should be executed right after you run `monitor` command;
