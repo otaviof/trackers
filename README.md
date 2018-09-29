@@ -25,7 +25,7 @@ The following sub-commands are available in `trackers`, via `trackers <sub-comma
 line. All commands and sub-command support a `--help` option, so please consider.
 
 In the top level, `trackers` supports only `--config` option, please consider
-[Config](##Configuration) section.
+[Configuration](#configuration) section.
 
 ### Harvest
 
@@ -45,7 +45,7 @@ trackers monitor --dry-run
 ```
 
 Check if trackers in database are working as expected, changing the tracker status depending in
-the outcome of monitoring probes. Consider [List](###List) sub-command to see the possible status.
+the outcome of monitoring probes. Consider [List](#list) sub-command to see the possible status.
 
 ### List
 
@@ -87,7 +87,7 @@ Based on informed torrent-status and tracker-status, `update` sub-command will i
 torrents in configured torrent-client, and update it's trackers list with instances of local
 database.
 
-On [List](###List) sub-command you can see the possible options for `--status` parameter, and
+On [List](#list) sub-command you can see the possible options for `--status` parameter, and
 regarding torrent status (`--torrent-status`), those the possible options:
 
 - **0**: torrent is stopped;
