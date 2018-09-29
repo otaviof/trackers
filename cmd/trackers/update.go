@@ -12,22 +12,23 @@ var updateCmd = &cobra.Command{
 	Run:   runUpdateCmd,
 	Short: "Update list of trackers in torrents",
 	Long: `
-Torrent Status
-	// StatusStopped stopped
-	StatusStopped = 0
-	// StatusCheckPending check pending
-	StatusCheckPending = 1
-	// StatusChecking checking
-	StatusChecking = 2
-	// StatusDownloadPending download pending
-	StatusDownloadPending = 3
-	// StatusDownloading downloading
-	StatusDownloading = 4
-	// StatusSeedPending seed pending
-	StatusSeedPending = 5
-	// StatusSeeding seeding
-	StatusSeeding = 6
-	`,
+Update running torrents with local trackers database entries. By running update, Trackers will
+inspect running torrents, and let you add trackers based on tracker and torrents status.
+
+The torrent status may be:
+ - 0: stopped;
+ - 1: check pending;
+ - 2: checking;
+ - 3: download pending;
+ - 4: downloading;
+ - 5: seed pending;
+ - 6: seeding;
+
+Trackers status can be:
+  - 0: service is reachable and responding;
+  - 1: Can't resolv tracker's hostname;
+  - 2: service does not respond;
+  - 3: tracker was overwritten by "trackers overwrite";`,
 }
 
 var torrentStatuses []string // torrent status filter
