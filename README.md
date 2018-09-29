@@ -153,3 +153,19 @@ You may also schedule sub-commands to run, so here goes a suggestion:
 - `monitor`: once a day, maybe twice a day;
 - `list`: and updating local `/etc/hosts`, should be execute right after you run `monitor` command;
 - `update`: also should be executed right after you run `monitor` command;
+
+## Contributing
+
+Testing this project requires a available instance of Transmission running, with RPC enabled. To
+configure tests, export the following environment variables:
+
+- `TRANSMISSION_RPC_URL`: Transmission RPC URL;
+- `TRANSMISSION_RPC_USERNAME`: Transmission RPC username;
+- `TRANSMISSION_RPC_PASSWORD`: Transmission RPC password;
+
+And then:
+
+``` bash
+make bootstrap
+make test
+```
