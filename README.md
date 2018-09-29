@@ -71,8 +71,8 @@ trackers overwrite --hostname hostname --addresses 127.0.0.1,127.0.0.2
 ```
 
 Allows you to overwrite the hostname address for trackers, keep in mind a given hostname may mean
-more than one tracker in the ddtabase, possibly several. On overwriting a hostname, Trackers will
-inspect all services that matches the informed hosntame, and probe the service using the new
+more than one tracker in the database, possibly several. On overwriting a hostname, Trackers will
+inspect all services that matches the informed hostname, and probe the service using the new
 hostname, only overwriting the entries that have a successful probe.
 
 The overwritten entries will have status **3** in the database.
