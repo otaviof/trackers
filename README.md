@@ -7,11 +7,10 @@ A tool to keep track of Torrent tracker services.
 Tracker services is something that can disappear and re-appear pretty much all over the sudden, it
 can be subject of blockades, take down actions and other infrastructure related problems. So, at
 the end of the day you want to know which trackers are working, and with this information you can
-optimize your client, to only spent on working trackers.
+optimize your client, to only spend time on working trackers.
 
 For this book-keeping work `trackers` helps you to understand which ones are in use, test if they
-are working, and cache them locally. You can also `overwrite` addresses and `update` your torrent
-client with local database of trackers.
+are working, overwrite, cache and update your running torrents.
 
 ## Installation
 
