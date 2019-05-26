@@ -6,8 +6,7 @@ import (
 	"log"
 	"strings"
 
-	// sqlite databse drivers
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/mattn/go-sqlite3" // sqlite database driver
 )
 
 type storageInterface interface {

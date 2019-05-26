@@ -15,7 +15,7 @@ type Overwrite struct {
 // against new addresses, when successful returns a new Tracker object.
 func (u *Overwrite) probeAddresses(tracker *Tracker, addresses []string) (*Tracker, error) {
 	var updatedTracker *Tracker
-	var recheableAddresses []string
+	var reachableAddresses []string
 	var probe *Probe
 	var err error
 
@@ -28,18 +28,18 @@ func (u *Overwrite) probeAddresses(tracker *Tracker, addresses []string) (*Track
 	probe = NewProbe(updatedTracker, u.config.Probe.Timeout)
 	probe.SetAddresses(addresses)
 
-	if recheableAddresses, err = probe.ReachableAddresses(); err != nil {
+	if reachableAddresses, err = probe.ReachableAddresses(); err != nil {
 		return nil, err
 	}
 
-	if len(recheableAddresses) == 0 {
+	if len(reachableAddresses) == 0 {
 		log.Printf("[WARN] New addresses are not reachable for '%s'", updatedTracker.Announce)
 		return nil, nil
 	}
 
-	log.Printf("[INFO] Reachable addresses: '[%s]'", strings.Join(recheableAddresses, ", "))
+	log.Printf("[INFO] Reachable addresses: '[%s]'", strings.Join(reachableAddresses, ", "))
 	// saving reachable addresses in tracker
-	updatedTracker.Addresses = recheableAddresses
+	updatedTracker.Addresses = reachableAddresses
 
 	return updatedTracker, nil
 }
@@ -79,7 +79,7 @@ func (u *Overwrite) HostnameAddress(hostname string, addresses []string, dryRun 
 	return nil
 }
 
-// NewOverwrite returns a overwrite instnace.
+// NewOverwrite returns a overwrite instance.
 func NewOverwrite(storage storageInterface, config *Config) *Overwrite {
 	return &Overwrite{storage: storage, config: config}
 }
