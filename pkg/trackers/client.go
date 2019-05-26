@@ -49,7 +49,8 @@ func (c *Client) extractTorrent(torrent *trans.Torrent) (*Torrent, error) {
 
 	for _, trackerStats = range *torrent.TrackerStats {
 		if extractedTracker, err = NewTracker(trackerStats.Announce); err != nil {
-			return nil, err
+			log.Printf("[ERROR] On parsing new tracker data: '%s'", err)
+			continue
 		}
 		extractedTrackers = append(extractedTrackers, extractedTracker)
 	}
@@ -89,7 +90,7 @@ func (c *Client) ListTorrents(torrentStatus []int) ([]*Torrent, error) {
 	return extractedTorrents, nil
 }
 
-// setTrackers execute thet Set API calls to update trackers in informed torrent, when dry-run it
+// setTrackers execute that Set API calls to update trackers in informed torrent, when dry-run it
 // will only print usual log messages.
 func (c *Client) setTrackers(torrent *trans.Torrent, t *Torrent, trackers []*Tracker, dryRun bool) error {
 	var trackersInTorrent = c.ListTrackers([]*Torrent{t})
@@ -145,7 +146,7 @@ func (c *Client) UpdateTrackers(torrents []*Torrent, trackers []*Tracker, dryRun
 	for _, torrentInClient = range torrentsInClient {
 		log.Printf("Updating torrent: '%s' (ID: '%d')", torrentInClient.Name, torrentInClient.ID)
 		if intSliceContains(IDs, torrentInClient.ID) {
-			log.Printf("Skpping update on torrent '%s' (id '%d')...",
+			log.Printf("Skipping update on torrent '%s' (id '%d')...",
 				torrentInClient.Name, torrentInClient.ID)
 			continue
 		}
