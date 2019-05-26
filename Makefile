@@ -8,7 +8,7 @@ default: build
 bootstrap:
 	dep ensure -v -vendor-only
 
-build: clean
+build:
 	go build -v -o $(BUILD_DIR)/$(APP) cmd/$(APP)/*
 
 clean:
@@ -20,7 +20,7 @@ clean-vendor:
 test:
 	go test -cover -v pkg/$(APP)/*
 
-install:
+install: clean build
 	cp -v -f $(BUILD_DIR)/$(APP) /usr/local/bin/$(APP)
 	chmod +x /usr/local/bin/$(APP)
 
