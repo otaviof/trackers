@@ -1,22 +1,27 @@
 APP = trackers
 BUILD_DIR ?= build
 
-.PHONY: default bootstrap build clean test
-
 default: build
 
-bootstrap:
-	dep ensure -v -vendor-only
+.PHONY: vendor
+vendor:
+	go mod vendor
 
-build:
-	go build -v -o $(BUILD_DIR)/$(APP) cmd/$(APP)/*
+.PHONY: $(BUILD_DIR)/$(APP)
+$(BUILD_DIR)/$(APP):
+	go build -mod=vendor -v -o $(BUILD_DIR)/$(APP) cmd/$(APP)/*
 
+build: $(BUILD_DIR)/$(APP)
+
+.PHONY: clean
 clean:
 	rm -rf $(BUILD_DIR) > /dev/null
 
+.PHONY: clean-vendor
 clean-vendor:
 	rm -rf ./vendor > /dev/null
 
+.PHONY: test
 test:
 	go test -cover -v pkg/$(APP)/*
 
